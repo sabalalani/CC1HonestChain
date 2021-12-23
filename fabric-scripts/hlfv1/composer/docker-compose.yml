@@ -20,6 +20,7 @@ services:
     container_name: orderer.example.com
     image: hyperledger/fabric-orderer:$ARCH-1.0.4
     environment:
+      - GODEBUG=netdns=go
       - ORDERER_GENERAL_LOGLEVEL=debug
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
@@ -38,6 +39,7 @@ services:
     container_name: peer0.org1.example.com
     image: hyperledger/fabric-peer:$ARCH-1.0.4
     environment:
+      - GODEBUG=netdns=go
       - CORE_LOGGING_PEER=debug
       - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
