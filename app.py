@@ -292,7 +292,7 @@ def dashboard():
         print("pending request id is",i.trustid)
 
     
-    if(current_user.username == 'Admin'):
+    if(current_user.username == 'admin'):
         return render_template('dashboard_admin.html', name = current_user.username, pending_req= pending_req, approvedreq_info= approvedreq_info, denyreq_info=denyreq_info, resultset=resultset)
     elif(current_user.username == 'internaluser'):
         print('internal user dashboard')
@@ -702,8 +702,208 @@ def save_dialog():
     return "Saved successfully"
     #return "Failed to save."
 
+def seed_tables():
+    users = ["admin", "internaluser", "testuser"]
+    if len(User.query.all()) == 0:
+        for u in users:
+            db.session.add(User(username=u, email=(u+"@localhost"), password=u+"123"))
+    if len(Dataset.query.all()) == 0:
+        dataset = [
+            [
+                "1",
+                "Care site place of service counts",
+                "15",
+                "75"
+            ],
+            [
+                "2",
+                "Counts of condition record",
+                "50",
+                "50"
+            ],
+            [
+                "3",
+                "Counts of condition types",
+                "45",
+                "50"
+            ],
+            [
+                "4",
+                "Counts of drug types",
+                "25",
+                "75"
+            ],
+            [
+                "5",
+                "Counts of persons with any number of exposures to a certain drug",
+                "60",
+                "50"
+            ],
+            [
+                "6",
+                "Distribution of age across all observation period records",
+                "75",
+                "25"
+            ],
+            [
+                "7",
+                "How long does a condition last",
+                "60",
+                "50"
+            ],
+            [
+                "8",
+                "Number of patients by gender, stratified by year of birth",
+                "75",
+                "75"
+            ],
+            [
+                "9",
+                "Number of people continuously observed throughout a year",
+                "80",
+                "25"
+            ],
+            [
+                "10",
+                "Number of people who have atleast one observation period that is longer than 365 days",
+                "85",
+                "25"
+            ],
+            [
+                "11",
+                "Patient count per care site place of service",
+                "45",
+                "50"
+            ],
+            [
+                "12",
+                "Number of patients in the dataset",
+                "85",
+                "25"
+            ]
+        ]
+        for d in dataset:
+            db.session.add(Dataset(
+                datasetid=d[0],
+                nameset=d[1],
+                dataset_risk=d[2],
+                accept_risk=d[3]
+            ))
+    if len(IrbInfo.query.all()) == 0:
+        for i in range(1001, 1009):
+            db.session.add(IrbInfo(
+                irb_id=i
+            ))
+    if len(IrbInfo.query.all()) == 0:
+        item_info = [
+            [
+                "1",
+                "radiology_images",
+                "d01"
+            ],
+            [
+                "2",
+                "radiology_imaging_reports",
+                "d02"
+            ],
+            [
+                "3",
+                "ekg",
+                "d03"
+            ],
+            [
+                "4",
+                "progress_notes",
+                "d04"
+            ],
+            [
+                "5",
+                "history_phy",
+                "d05"
+            ],
+            [
+                "6",
+                "oper_report",
+                "d06"
+            ],
+            [
+                "7",
+                "path_report",
+                "d07"
+            ],
+            [
+                "8",
+                "lab_report",
+                "d08"
+            ],
+            [
+                "9",
+                "photographs",
+                "d09"
+            ],
+            [
+                "10",
+                "discharge_summaries",
+                "d10"
+            ],
+            [
+                "11",
+                "health_care_billing",
+                "d11"
+            ],
+            [
+                "12",
+                "consult",
+                "d12"
+            ],
+            [
+                "13",
+                "medical",
+                "d13"
+            ],
+            [
+                "14",
+                "emergency",
+                "d14"
+            ],
+            [
+                "15",
+                "dental",
+                "d15"
+            ],
+            [
+                "16",
+                "demographic",
+                "d16"
+            ],
+            [
+                "17",
+                "question",
+                "d17"
+            ],
+            [
+                "18",
+                "audiotape",
+                "d18"
+            ]
+        ]
+        for d in item_info:
+            db.session.add(ItemInfo(
+                itemid=d[0],
+                itemname=d[1],
+                itemunique=d[2]
+            ))
+    if len(TrustChoice.query.all()) == 0:
+        for d in ["Yes", "No", "Uncertain"]:
+            db.session.add(TrustChoice(
+                decision=d[0]
+            ))
+    db.session.commit()
+        
+
 if __name__ == '__main__':
     db.init_app(app)
     db.create_all()
+    seed_tables()
     app.run(host = '0.0.0.0', debug=True)
 
