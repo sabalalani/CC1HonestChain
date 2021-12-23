@@ -629,13 +629,13 @@ def approvereq(req_id):
     #for j in approvedreq_info:
      #   print("Approved request is",j.requestname)
     
-    #for i in pendingreq_info:
-     #   datasetinfo = Dataset.query.filter_by(datasetid = i.datasetid).all()
-    #for j in datasetinfo:
-     #   dataset_name = j.nameset
+    for i in pendingreq_info:
+       datasetinfo = Dataset.query.filter_by(datasetid = i.datasetid).all()
+    for j in datasetinfo:
+       dataset_name = j.nameset
     #pg_query = 'select * from data_catalog where dataset_name = %s'
     #cur.execute(pg_query,[dataset_name])
-    #record = cur.fetchone()
+    record = DataCatalog.query.filter(dataset_id=dataset_name).first()
     #print("Result",record)
 
     return render_template('dashboard_admin.html',name = current_user.username, pending_req=pending_req, record = record, denyreq_info =denyreq_info, approvedreq_info = approvedreq_info)
