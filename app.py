@@ -244,6 +244,7 @@ def signup():
         flash("Registration successful!", "success")
         new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
         db.session.add(new_user)
+        db.session.commit()
 
         return '<h1> New user has been registered</h1>'
 
