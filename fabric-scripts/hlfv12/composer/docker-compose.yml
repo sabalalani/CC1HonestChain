@@ -69,3 +69,21 @@ services:
       - 5984:5984
     environment:
       DB_URL: http://localhost:5984/member_db
+
+  composer-rest:
+    container_name: composer-rest
+    image: hyperledger/composer-rest-server:next
+    env_file:
+      - ./composer-rest.env
+    depends_on:
+      - couchdb
+    ports:
+      - 3000
+    volumes:
+      # - composer-rest:/home/composer/.composer
+      - ./:/etc/hyperledger/configtx
+      - ./crypto-config:/crypto-config
+      - ./crypto-config/PeerAdmin@hlfv1.card:/home/composer/.composer/cards/PeerAdmin@hlfv1.card
+
+volumes:
+  composer-rest:
