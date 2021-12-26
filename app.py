@@ -11,8 +11,8 @@ from sqlalchemy.engine import Engine
 # from sqlalchemy.engine import Engine
 from sqlalchemy import event
 import os
-# import psycopg2
 import json
+import requests
 
 from wtforms_sqlalchemy.fields import QuerySelectField
 #from wtforms.ext.sqlalchemy.fields import QuerySelectField
@@ -388,10 +388,10 @@ def submithipaa():
 
     #  postgreSQL_select_Query = "select * from data_policy_domain where data_policy_domain.irb_number = %s"
     #  cur.execute(postgreSQL_select_Query, [irb_id])
-    #  resultset = cur.fetchone()
+    resultset = ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"]
     #  print('resultset is',resultset)
-    #  d = resultset[1:]
-    d = ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"]
+    d = resultset[1:]
+    # d = ["1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1", "1"]
         
     countmismatch = 0
     countundecided = 0
@@ -407,7 +407,11 @@ def submithipaa():
             countundecided += 1
         elif (a == 'Uncertain' and b == None):
             countmatch += 1
+    sum=0        
+    com=sum+(countmatch*10)
     N = 18
+    com=com/N
+    compliance=com
     # beta model trust calculation
     alpha_c = floor(countmatch + ((countundecided*countmatch)/(countmatch+countmismatch)));
     beta_c = N - alpha_c;
@@ -434,7 +438,33 @@ def submithipaa():
     wi = format(wi, '.2f')
     print('dirichlet model is', wi)
 
+    dataset_id = resultset[1]
+    tasklist =1
+    task_id=1
+    dr=0
     status = 'pending'
+    risk_level='low'
+    reputation=10
+    user_id = current_user.id
+
+    get_user_params = '{"userId":%s}' % (current_user.id)
+    get_data_params = '{"datasetId":%s}' % (dataset_id)
+    user = requests.get("http://localhost:6001/api/User", params=get_user_params)
+    data = requests.get("http://localhost:6001/api/Dataset", params=get_data_params)
+    print(data)
+    user_json = '{"userId": %s}' % (current_user.id)
+    dataset = '{"dataset_id": %s, "risk_level": %s, "decision": %s, "reputation": %s, "last_requester": %s}' % (dataset_id, risk_level, status, reputation, "resources:org.honestchain.User#" + str(current_user.id))
+    #trans = '{"inputcs": %s, "inputdr": %s, "dataset": %s, "user": %s}' % (compliance, dr, dataset, user.content)
+    if user.status_code != 200 or user.content == '[]':
+        r_post_user = requests.post("http://localhost:6001/explorer/User", json=user_json)
+    if data.status_code != 200 or data.content == '[]':
+        data_post = requests.post("http://localhost:6001/explorer/Dataset", json=dataset)
+    trans = '{"inputcs": %s, "inputdr": %s, "dataset": %s, "user": %s}' % (compliance, dr, "resources:org.honestchain.Dataset#" + str(dataset_id), "resources:org.honestchain.User#" + str(current_user.id))
+    trans_post = requests.post("http://localhost:6001/explorer/ChainTransaction", json=trans)
+    result_get = requests.get("http://localhost:6001/api/Dataset", params=get_data_params)
+    print(result_get.content)
+    # print(result_get.content.decision)
+    #r_post_task = requests.post("http://3.81.13.0:3000/explorer/TaskList", json=task_json_obj)
     new_hipaa_request = TrustCalcForm(ownerid =  current_user.id, radiology_images = radiology_images, radiology_imaging_reports = radiology_imaging_reports, ekg = ekg, progress_notes = progress_notes, history_phy = history_phy, oper_report = oper_report, path_report = path_report, lab_report = lab_report, photographs = photographs, discharge_summaries = discharge_summaries,  health_care_billing= health_care_billing, consult = consult, medication = medication, emergency = emergency, dental  = dental, demographic = demographic,question = question, audiotape = audiotape, beta = Ei, dirichlet = wi, status = status)
     db.session.add(new_hipaa_request)
     db.session.commit()
@@ -702,6 +732,19 @@ def save_dialog():
     return "Saved successfully"
     #return "Failed to save."
 
+tasks = [
+    {
+    "$class": "org.honestchain.User",
+    "userId": "1293",
+    "datasetId": "DS101",
+    "task_list": []
+    }
+]
+
+@app.route('/tasks',methods=['GET'])
+def get_tasks():
+    return jsonify({'tasks': tasks})
+
 def seed_tables():
     users = ["admin", "internaluser", "testuser"]
     if len(User.query.all()) == 0:
@@ -899,7 +942,6 @@ def seed_tables():
                 decision=d[0]
             ))
     db.session.commit()
-        
 
 if __name__ == '__main__':
     db.init_app(app)
